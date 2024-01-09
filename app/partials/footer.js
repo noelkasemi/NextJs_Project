@@ -4,7 +4,7 @@ import TwitterIcon from "@/SVG/twitterIcon";
 
 export default function Footer() {
   return (
-    <footer className="bg-[#414141] w-full mt-14 h-[350px] px-24 py-8 flex justify-between">
+    <footer className=" bg-[#414141] w-full mt-14 h-[350px] px-24 py-8 flex justify-between">
       <section>
         <article className="flex space-x-4">
           <FacebookIcon style={``} />

@@ -3,7 +3,7 @@ import Link from "next/link";
 
 export default function Header() {
   return (
-    <header className="flex w-full justify-between items-center px-16 pt-4 fixed top-0 pb-2 shadow bg-white">
+    <header className="flex w-full justify-between items-center px-16 pt-4 fixed z-50 top-0 pb-2 shadow bg-white">
       <section className="w-1/2 ">
         <h1 className=" text-5xl text-red-500 font-semibold ">Inner pieces</h1>
         <p className="ml-4 mt-2 text-sm ">
@@ -14,15 +14,15 @@ export default function Header() {
         <Link className="hover:text-red-500 " href="/">
           Home
         </Link>
-        <Link className="hover:text-red-500 " href="/articles">
+        <Link className="hover:text-red-500 " href="/pages/articles">
           Articles
         </Link>
-        <Link className="hover:text-red-500 " href="/about">
+        <Link className="hover:text-red-500 " href="/pages/about">
           About
         </Link>
-        <Link className="text-semibold mt-4" href="/form/login">
+        <Link className="text-semibold mt-4" href="/pages/profile">
           <ProfileIcon style="w-7 h-7 ml-2" />
-          Log in{" "}
+          Admin{" "}
         </Link>
       </section>
     </header>
