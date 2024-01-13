@@ -7,33 +7,28 @@ const path = require('path');
 const app = express();
 const port = 3001;
 
-// Enable CORS for all routes
 app.use(cors());
-app.use(express.json()); // Add this line to enable JSON parsing
+app.use(express.json({ limit: '10mb' }));
+app.use(express.json());
 
-// Connect to MongoDB using environment variable
 require('dotenv').config();
 mongoose.connect(process.env.MONGODB_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
 
-// Define the article schema
 const articleSchema = new mongoose.Schema({
-  title: { type: String, required: true },
   content: { type: String, required: true },
   image: { type: String }, // Store the image path or filename
   created_at: { type: Date, default: Date.now },
   updated_at: { type: Date, default: Date.now },
 });
 
-// Create the Article model
 const Article = mongoose.model('Article', articleSchema);
 
-// Set up multer for handling file uploads
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, 'public/images'); // Save the uploaded images to the 'public/images' directory
+    cb(null, 'public/images');
   },
   filename: function (req, file, cb) {
     cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname));
@@ -42,17 +37,16 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
-// Handle article creation with image upload
 app.post('/api/articles', upload.single('image'), async (req, res) => {
-  const { title, content } = req.body;
+  const { content } = req.body;
   const imagePath = req.file ? `/images/${req.file.filename}` : undefined;
 
-  if (!title || !content) {
-    return res.status(400).json({ error: 'Title and content are required' });
+  if (!content) {
+    return res.status(400).json({ error: 'Content is required' });
   }
 
   try {
-    const newArticle = await Article.create({ title, content, image: imagePath });
+    const newArticle = await Article.create({ content, image: imagePath });
     res.json(newArticle);
   } catch (error) {
     console.error(error);
@@ -70,6 +64,37 @@ app.get('/api/articles', async (req, res) => {
   }
 });
 
+const jsdom = require("jsdom");
+const { JSDOM } = jsdom;
+
+app.get('/api/articles/title/:title', async (req, res) => {
+  const { title } = req.params;
+
+  try {   
+    // Decode spaces to hyphens to match the title
+    const decodedTitleWithSpace = decodeURIComponent(title.replace(/-/g, ' '));
+
+    // Update the query to search for the title within HTML content
+    const articles = await Article.find();
+    const foundArticle = articles.find(article => {
+      const dom = new JSDOM(article.content);
+      const h1Element = dom.window.document.querySelector('h1');
+      return h1Element && h1Element.textContent === decodedTitleWithSpace;
+    });
+
+    if (!foundArticle) {
+      return res.status(404).json({ error: 'Article not found' });
+    }
+
+    res.json(foundArticle);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+
+//route to get an article by id
 app.get('/api/articles/:id', async (req, res) => {
   const { id } = req.params;
   try {

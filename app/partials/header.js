@@ -10,9 +10,9 @@ export default function Header() {
   return (
     <header className="flex w-full justify-between items-center px-4 lg:px-16 pt-4 fixed z-50 top-0 pb-2 shadow bg-white">
       <section className="w-full ">
-        <h1 className=" text-3xl md:text-5xl  text-red-500 font-semibold ">
+        <Link href={'/'} className="cursor-pointer text-3xl md:text-5xl  text-red-500 font-semibold ">
           Inner pieces
-        </h1>
+        </Link>
         <p className=" md:ml-4 md:mt-2 text-sm ">
           Thoughts on Lifestyle & Mental Health
         </p>

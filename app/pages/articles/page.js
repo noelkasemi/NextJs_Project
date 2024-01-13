@@ -1,4 +1,4 @@
-"use client";
+ "use client";
 import ArticleFetcher from "@/app/api/get";
 import Footer from "../../partials/footer";
 import Header from "../../partials/header";
@@ -9,6 +9,14 @@ import { useState } from "react";
 export default function Articles() {
   const [allArticles, setAllArticles] = useState("");
   const data = [...allArticles];
+  
+  const getTitleFromContent = (content) => {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(content, "text/html");
+    const h1Element = doc.querySelector("h1");
+
+    return h1Element ? h1Element.textContent : "Untitled"; // Default to "Untitled" if no h1 element is found
+  };
 
   return (
     <>
@@ -32,10 +40,10 @@ export default function Articles() {
       <section className="grid grid-cols-1 sm:grid-cols-2 gap-2 md:mx-auto w-full md:w-2/3 h-fit">
         {data.map((article) => (
           <PostCard
-          embed={article.content}
+            embed={article.content}
             id={article._id}
             key={article._id}
-            title={article.title}
+            title={getTitleFromContent(article.content)}
             description={article.content}
             imgSrc={article.image}
           />

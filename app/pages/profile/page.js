@@ -11,9 +11,7 @@ export default function Profile() {
   const [isClicked, setIsClicked] = useState(null);
   const [editedArticle, setEditedArticle] = useState(null);
   const [show, setShow] = useState(false);
-  const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [selectedFile, setSelectedFile] = useState(null);
 
   // Function to fetch articles from the server
   const fetchArticles = async () => {
@@ -46,16 +44,13 @@ export default function Profile() {
   };
 
   //Takes the new values and updates them accodingly
-  const postArticle = async (editedArticle, title, content) => {
+
+  const postArticle = async (editedArticle, content) => {
     const data = {
       id: editedArticle,
-      title: title,
+      title: content,
       content: content,
     };
-
-    if (selectedFile) {
-      data.image = selectedFile;
-    }
 
     try {
       const method = "PUT";
@@ -69,37 +64,32 @@ export default function Profile() {
         body: JSON.stringify(data),
       });
 
+      if (!response.ok) {
+        console.error("PUT Request failed:", response.statusText);
+        return;
+      }
+
       const responseData = await response.json();
 
-      fetchArticles();
+      console.log("PUT Request Response Data:", responseData);
 
+      fetchArticles();
       setEditedArticle(null);
-      setTitle("");
-      setContent("");
-      setSelectedFile(null);
       setShow(false);
     } catch (error) {
       console.error("Error posting/updating article:", error);
     }
   };
 
-  const handleTitleChange = (e) => {
-    setTitle(e.target.value);
-  };
-
   const handleContentChange = (value) => {
     setContent(value);
   };
 
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    setSelectedFile(file);
-  };
-
   const handleSubmit = () => {
-    postArticle(editedArticle, title, content);
+    postArticle(editedArticle, content);
+    setContent('')
   };
-
+console.log(content, editedArticle)
   return (
     <section>
       <Header />
@@ -107,12 +97,8 @@ export default function Profile() {
         <h2 className="text-2xl font-bold mb-4 text-center">Article List</h2>
         <Dialog show={show} close={() => setShow(false)}>
           <ArticleForm
-            quillStyle={`h-[200px]`}
-            title={title}
             content={content}
             handleContentChange={handleContentChange}
-            handleFileChange={handleFileChange}
-            handleTitleChange={handleTitleChange}
             handleSubmit={handleSubmit}
           >
             <article className="flex space-x-4 pr-2">
@@ -142,12 +128,9 @@ export default function Profile() {
         <article className="grid sm:grid-cols-2 gap-6 md:mx-auto w-full md:w-2/3 ">
           {articles.map((article) => (
             <PostCard
-            embed={article.content}
+              embed={article.content}
               key={article._id}
               id={article._id}
-              title={article.title}
-              description={article.content}
-              imgSrc={article.image}
               icon={true}
               isClicked={isClicked === article._id}
               isPenClicked={editedArticle === article._id}

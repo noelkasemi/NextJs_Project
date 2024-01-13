@@ -2,10 +2,10 @@
 import Header from "./partials/header";
 import Image from "next/image";
 import Link from "next/link";
-import ArticleCard from "./ui/articleCard";
 import Footer from "./partials/footer";
 import ArticleFetcher from "./api/get";
 import { useState } from "react";
+import PostCard from "./ui/postCard";
 
 export default function Home() {
   const [articles, setArticles] = useState([]);
@@ -31,17 +31,13 @@ export default function Home() {
               src="/images/image2.webp"
               width={550}
               height={550}
-              className="w-full md:w-1/2 cursor-pointer"
+              className="w-full md:w-1/2 "
               alt="Image 2"
             />
-            <article className=" h-fit w-2/3 md:w-1/2 flex flex-col items-center ">
-              <h1 className="font-serif text-2xl mt-4 mb-2">
-                {articles[0]?.title}
-              </h1>
-              <p
-                dangerouslySetInnerHTML={{ __html: articles[0]?.content }}
-                className="text-wrap h-[116px] truncate "
-              ></p>
+            <article className=" h-fit w-2/3 md:w-1/2 flex flex-col items-center mt-4">
+              <p className="font-semibold font-serif">
+               {` Explore the intricate connection between lifestyle choices and mental health as we delve into 'Inner Pieces.' This blog is a sanctuary for thoughtful reflections and insights, guiding you through a journey of self-discovery and well-being.`}
+              </p>
             </article>
             <Link
               href="/pages/articles"
@@ -51,16 +47,12 @@ export default function Home() {
             </Link>
           </article>
         </section>
-        <section className="space-y-12 flex flex-col items-center px-4">
-          <h1 className="text-4xl font-semibold">Recent Articles</h1>
+        <h1 className="text-4xl font-semibold text-center items-center">
+          Recent Articles
+        </h1>
+        <section className="grid grid-cols-1 sm:grid-cols-2 gap-2 md:mx-auto w-full md:w-2/3 h-fit">
           {articles.map((article) => (
-            <ArticleCard
-              id={article._id}
-              key={article._id}
-              title={article.title}
-              imgSrc={article.image}
-              description={article.content}
-            />
+            <PostCard embed={article.content} key={article._id} />
           ))}
         </section>
       </main>
