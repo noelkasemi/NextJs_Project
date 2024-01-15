@@ -5,11 +5,20 @@ const multer = require('multer');
 const path = require('path');
 
 const app = express();
-const port = 3001;
+const port = process.env.PORT || 3001;
 
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
-app.use(express.json());
+
+const userSchema = new mongoose.Schema({
+  username: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
+  email: { type: String, required: true, unique: true },
+  role: { type: String, enum: ['user', 'moderator', 'admin'], default: 'user' },
+});
+
+const User = mongoose.model('User', userSchema);
+module.exports = User;
 
 require('dotenv').config();
 mongoose.connect(process.env.MONGODB_URI, {
@@ -25,6 +34,152 @@ const articleSchema = new mongoose.Schema({
 });
 
 const Article = mongoose.model('Article', articleSchema);
+
+// Sign up endpoint
+app.post('/api/signup', async (req, res) => {
+  const { username, email, password } = req.body;
+
+  if (!username || !email || !password) {
+    return res.status(400).json({ error: 'Username, email, and password are required' });
+  }
+
+  try {
+    // Check if the user already exists
+    const existingUser = await User.findOne({ email });
+
+    if (existingUser) {
+      return res.status(400).json({ error: 'Email already registered' });
+    }
+
+    // Create a new user with role set to 'user'
+    const newUser = await User.create({ username, email, password, role: 'user' });
+    res.json(newUser);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+
+// Users endpoint
+app.get('/api/users', async (req, res) => {
+  try {
+    const users = await User.find();
+    res.json(users);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+
+// Login endpoint
+app.post('/api/login', async (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res.status(400).json({ error: 'Email and password are required' });
+  }
+
+  try {
+    // Find the user by email
+    const user = await User.findOne({ email });
+
+    if (!user || user.password !== password) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+
+    // Set the redirection path based on the user's role
+    let redirect;
+    if (user.role === 'admin') {
+      redirect = '/pages/profile/adminProfile';
+    } else if (user.role === 'moderator') {
+      redirect = '/pages/profile/moderatorProfile';
+    } else {
+      redirect = `/pages/profile/${user._id}`;
+    }
+
+    console.log("Redirecting to:", redirect);
+
+    // Respond with the redirection path and user's role
+    return res.status(200).json({ redirect, role: user.role });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+
+
+// Get user profile endpoint
+app.get('/api/profile/:id', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const user = await User.findById(id);
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    res.json(user);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+// Update user profile endpoint
+app.put('/api/profile/:id', async (req, res) => {
+  const { id } = req.params;
+  const { username, email, role } = req.body; // Include role in the request body
+
+  if (!username || !email) {
+    return res.status(400).json({ error: 'Username and email are required' });
+  }
+
+  try {
+    // Construct the update object based on the fields provided
+    const updateObject = { username, email };
+    if (role) {
+      updateObject.role = role; // Include role if provided
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(
+      id,
+      updateObject,
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    res.json(updatedUser);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+
+// Delete user profile endpoint
+app.delete('/api/profile/:id', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const deletedUser = await User.findByIdAndDelete(id);
+
+    if (!deletedUser) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    res.json({ message: 'User deleted successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -147,3 +302,4 @@ app.delete('/api/articles/:id', async (req, res) => {
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
 });
+

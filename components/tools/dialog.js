@@ -1,7 +1,7 @@
 import { Dialog, Transition } from "@headlessui/react";
 import { Fragment, useState } from "react";
 
-export default function MyModal({ children, close, open, show, btnChildren }) {
+export default function MyModal({ children, close, open, show, btnChildren, panelStyle }) {
   return (
     <>
       <div className="fixed inset-0 flex items-center justify-center">
@@ -41,7 +41,7 @@ export default function MyModal({ children, close, open, show, btnChildren }) {
                 leaveFrom="opacity-100 scale-100"
                 leaveTo="opacity-0 scale-95"
               >
-                <Dialog.Panel className="w-full max-w-2xl transform overflow-auto rounded-2xl bg-white p-2 text-left align-middle shadow-xl transition-all ">
+                <Dialog.Panel className={`${panelStyle} w-full max-w-2xl transform overflow-auto rounded-2xl bg-white p-2 text-left align-middle shadow-xl transition-all`}>
                   {children}
                 </Dialog.Panel>
               </Transition.Child>

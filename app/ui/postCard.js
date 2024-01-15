@@ -6,6 +6,10 @@ import ProfileIcon from "@/SVG/profileIcon";
 import Trash from "@/SVG/trash";
 import Image from "next/image";
 import Link from "next/link";
+import Flag from "@/SVG/flag";
+import { useState } from "react";
+import Dialog from "@/components/tools/dialog";
+import InappropriateFlagSurvey from "../form/InappropriateFlagSurvey/page";
 
 export default function PostCard({
   embed,
@@ -17,9 +21,11 @@ export default function PostCard({
   onUndoClick,
   onPenClick,
   isPenClicked,
-  style
+  style,
+  flag = false,
 }) {
   const router = useRouter();
+  const [show, setShow] = useState(false)
 
   // Function to extract the title, image, and content from HTML
   const extractDataFromHTML = (html) => {
@@ -52,8 +58,8 @@ export default function PostCard({
   const uppercasedTitle =
     title && title.charAt(0).toUpperCase() + title.slice(1);
 
-    //Encodes the title from %20(symbol for space) to - for the url
-    const escapedValue = encodeURIComponent(title).replace(/%20/g, '-');
+  //Encodes the title from %20(symbol for space) to - for the url
+  const escapedValue = encodeURIComponent(title).replace(/%20/g, "-");
 
   return (
     <section
@@ -62,11 +68,20 @@ export default function PostCard({
         embed ? "border" : "border"
       } p-4 space-y-4 relative`}
     >
+      <Dialog panelStyle={'p-4'} show={show} close={() => setShow(false)} >
+      <InappropriateFlagSurvey close={() => setShow(false)} />
+      </Dialog>
+      {flag && (
+        <Flag
+          onClick={() => setShow(true)}
+          style={`w-12 h-12 rounded z-30 absolute left-4 top-12 cursor-pointer p-2 hover:bg-slate-200`}
+        />
+      )}
       {icon && !isPenClicked && !isClicked ? (
         <Pen
           onClick={onPenClick}
           style={
-            "cursor-pointer absolute w-16 h-16 z-20 right-16 top-8 hover:bg-slate-300 p-2 rounded "
+            "cursor-pointer absolute w-16 h-16 z-20 right-16 top-5 hover:bg-slate-300 p-2 rounded "
           }
         />
       ) : null}
@@ -125,9 +140,7 @@ export default function PostCard({
           ></p>
         </Link>
         <p className="absolute bg-white bottom-0 text-sm pb-2 pt-4 w-11/12">
-          <p className="border-t py-2"></p>
-          0 views
-
+          <p className="border-t py-2"></p>0 views
         </p>{" "}
       </>
     </section>
